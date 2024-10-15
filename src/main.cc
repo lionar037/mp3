@@ -9,7 +9,7 @@
 #include <memory>
 #include <mpg123.h>
 #include <ao/ao.h>
-#include <assets/assets.hpp>
+#include <assets.hpp>
 #include <mp3.hpp>
 
 #define BITS 16
@@ -17,8 +17,9 @@
 int main() {
     MP3::MP3Player player;
 
+
     // Cambia el índice según el archivo que quieras reproducir
-    const char* filename = getMP3Filename(8);
+    const char* filename = MP3::getMP3Filename(8);
     std::cout << "Reproduciendo: " << filename << "\n";
 
     if (!player.loadFile(filename)) {

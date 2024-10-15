@@ -15,7 +15,7 @@ namespace MP3{
 
     class MP3Player {
     public:
-        MP3Player();
+        explicit MP3Player();
         ~MP3Player();
     
         bool loadFile(const std::string& filename);

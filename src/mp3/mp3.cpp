@@ -11,22 +11,12 @@
 
 #define BITS 16
 
-namespace MP3{
-////////////////////////////////////////////////////////////////
-//
-//                      mp3.cpp
-//
-////////////////////////////////////////////////////////////////
+namespace MP3
+{
 
-#include <iostream>
-#include <algorithm>
-#include <mp3.hpp>
-
-#define BITS 16
-
-namespace MP3{
-
-    MP3Player::MP3Player() : mh(nullptr), device(nullptr), buffer(nullptr) {
+    MP3Player::MP3Player() 
+    : mh(nullptr), device(nullptr), buffer(nullptr) 
+    {
         mpg123_init();
         int err = 0;
         mh = mpg123_new(NULL, &err);
@@ -173,5 +163,5 @@ namespace MP3{
         // Cleanup will be handled in the destructor
     }
 */
-}
+
 
