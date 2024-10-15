@@ -2,6 +2,7 @@
 //
 //                      main.cpp
 //                      dependencies :sudo apt install libmpg123-dev
+//g++ -std=c++17 -o mp3_player src/main.cpp -lmpg123 -lao -lpthread -I/home/pi/src/mp3/include/assets/
 //
 ////////////////////////////////////////////////////////////////
 
