@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <mp3.h>
+#include <mp3.hpp>
 
 
 namespace Mp3_t{

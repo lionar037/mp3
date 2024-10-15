@@ -20,7 +20,7 @@ int main() {
     }
 
     // Abrir archivo MP3
-    const char* filename = "dualipa.mp3";
+    const char* filename = "assets/sounds/dualipa.mp3";
     err = mpg123_open(mh, filename);
     if (err != MPG123_OK) {
         std::cerr << "Failed to open MP3 file: " << mpg123_strerror(mh) << std::endl;
