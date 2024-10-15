@@ -9,67 +9,80 @@
 #include <mp3.hpp>
 
 
-namespace Mp3_t{
+#define BITS 16
 
-    Mp3_t::Mp3_t(/* args */)
-    {
+namespace MP3{
+
+    MP3Player::MP3Player() {
+        mpg123_init();
+        int err = 0;
+        mh = mpg123_new(NULL, &err);
+        if (mh == NULL) {
+            std::cerr << "Failed to create mpg123 handle: " << mpg123_plain_strerror(err) << std::endl;
+        }
     }
 
-    Mp3_t::~Mp3_t()
-    {
+    MP3Player::~MP3Player() {
+        if (mh) {
+            mpg123_close(mh);
+            mpg123_delete(mh);
+            mpg123_exit();
+        }
+        if (buffer) {
+            free(buffer);
+        }
+        if (device) {
+            ao_close(device);
+            ao_shutdown();
+        }
     }
 
-}//end MP3
+    bool MP3Player::loadFile(const std::string& filename) {
+        if (!mh) {
+            return false;
+        }
 
-/*
-////////////////////////////////////////////////////////////////
-//
-//                      main.cpp
-//
-////////////////////////////////////////////////////////////////
+        int err = mpg123_open(mh, filename.c_str());
+        if (err != MPG123_OK) {
+            std::cerr << "Failed to open MP3 file: " << mpg123_strerror(mh) << std::endl;
+            return false;
+        }
 
-#include <iostream>
-#include <memory>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-//#include <mp3.hpp>
+        mpg123_getformat(mh, &rate, &channels, &encoding);
+        std::cout << "Rate: " << rate << "Hz, Channels: " << channels << ", Encoding: " << encoding << std::endl;
 
-int main(int argc, char* argv[]) {
-    // Inicializar SDL2
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-        std::cerr << "Error al inicializar SDL: " << SDL_GetError() << std::endl;
-        return -1;
+        // Inicializar la salida de audio
+        ao_initialize();
+        int driver = ao_default_driver_id();
+        ao_sample_format format;
+        format.bits = BITS;
+        format.channels = channels;
+        format.rate = rate;
+        format.byte_format = AO_FMT_NATIVE;
+        format.matrix = 0;
+        device = ao_open_live(driver, &format, NULL);
+        if (device == NULL) {
+            std::cerr << "Error opening audio device" << std::endl;
+            return false;
+        }
+
+        buffer_size = mpg123_outblock(mh);
+        buffer = (unsigned char*)malloc(buffer_size * sizeof(unsigned char));
+        return true;
     }
 
-    // Inicializar SDL_mixer con formato MP3
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        std::cerr << "Error al inicializar SDL_mixer: " << Mix_GetError() << std::endl;
-        return -1;
+    void MP3Player::play() {
+        if (!mh || !device) {
+            return;
+        }
+
+        while (mpg123_read(mh, buffer, buffer_size, &buffer_size) == MPG123_OK) {
+            ao_play(device, (char *)buffer, buffer_size);
+        }
     }
 
-    // Cargar el archivo MP3
-    Mix_Music* music = Mix_LoadMUS("tu_archivo.mp3");
-    if (!music) {
-        std::cerr << "Error al cargar archivo MP3: " << Mix_GetError() << std::endl;
-        return -1;
+    void MP3Player::stop() {
+        // Cleanup will be handled in the destructor
     }
 
-    // Reproducir la música (-1 es para loop infinito, 0 para reproducir una vez)
-    if (Mix_PlayMusic(music, 1) == -1) {
-        std::cerr << "Error al reproducir música: " << Mix_GetError() << std::endl;
-        return -1;
-    }
-
-    // Esperar mientras se reproduce la música
-    std::cout << "Reproduciendo música... Presiona Enter para salir." << std::endl;
-    std::cin.get();
-
-    // Liberar recursos
-    Mix_FreeMusic(music);
-    Mix_CloseAudio();
-    SDL_Quit();
-
-    return 0;
 }
-
- */

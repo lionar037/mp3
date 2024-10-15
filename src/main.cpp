@@ -2,18 +2,40 @@
 //
 //                      main.cpp
 //                      dependencies :sudo apt install libmpg123-dev
-//g++ -std=c++17 -o mp3_player src/main.cpp -lmpg123 -lao -lpthread -I/home/pi/src/mp3/include/assets/
+//                      g++ -std=c++17 -o mp3_player src/main.cpp -lmpg123 -lao -lpthread -I/home/pi/src/mp3/include/assets/
 //
 ////////////////////////////////////////////////////////////////
 
 #include <iostream>
 #include <memory>
 #include <mpg123.h>
-#include <assets.hpp>
 #include <ao/ao.h>
-#define BITS 16
-//#include "../include/assets/assets.hpp"
+//libraries me
+#include <assets.hpp>
+#include <mp3.hpp>
 
+#define BITS 16
+
+
+int main() {
+    MP3::MP3Player player;
+
+    // Cambia el índice según el archivo que quieras reproducir
+    const char* filename = getMP3Filename(8);
+    std::cout << "Reproduciendo: " << filename << "\n";
+
+    if (!player.loadFile(filename)) {
+        std::cerr << "No se pudo cargar el archivo MP3" << std::endl;
+        return 1;
+    }
+
+    player.play();
+    
+    return 0;
+}
+
+
+/*
 
 int main() {
     mpg123_handle *mh;
@@ -84,3 +106,4 @@ int main() {
     return 0;
 }
 
+*/
