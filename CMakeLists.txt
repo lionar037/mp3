@@ -1,6 +1,6 @@
-
 project(MP3_app)
 cmake_minimum_required(VERSION 3.15)
+
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -20,9 +20,6 @@ endif()
 # Especificar el estándar de C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# Buscar la biblioteca bcm2835
-find_library(BCM2835_LIB bcm2835 REQUIRED)
 
 # Incluir directorios de encabezados
 include_directories(    
@@ -54,8 +51,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 )
 
-# Vincular la biblioteca bcm2835, pthread y picopng al ejecutable
-target_link_libraries(${PROJECT_NAME} ${BCM2835_LIB} pthread )
+# Buscar y vincular la biblioteca mpg123 para reproducir archivos MP3
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MPG123 REQUIRED IMPORTED_TARGET mpg123)
+
+# Vincular pthread y mpg123 al ejecutable
+target_link_libraries(${PROJECT_NAME} PkgConfig::MPG123 pthread)
 
 # Agregar opciones de compilación
-target_compile_options(${PROJECT_NAME} PRIVATE  -pedantic)
+target_compile_options(${PROJECT_NAME} PRIVATE -pedantic)
