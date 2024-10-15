@@ -1,13 +1,18 @@
 ////////////////////////////////////////////////////////////////
 //
 //                      main.cpp
+//                      dependencies :sudo apt install libmpg123-dev
 //
 ////////////////////////////////////////////////////////////////
 
 #include <iostream>
 #include <memory>
-//sudo apt install libmpg123-dev
 #include <mpg123.h>
+#include <assets.hpp>
+#include <ao/ao.h>
+#define BITS 16
+//#include "../include/assets/assets.hpp"
+
 
 int main() {
     mpg123_handle *mh;
@@ -20,7 +25,9 @@ int main() {
     }
 
     // Abrir archivo MP3
-    const char* filename = "assets/sounds/dualipa.mp3";
+    const char* filename = getMP3Filename(8);  // Cambia el índice según el archivo que quieras reproducir
+    std::cout << "mp3 : " <<getMP3Filename(8)<<"\n";
+
     err = mpg123_open(mh, filename);
     if (err != MPG123_OK) {
         std::cerr << "Failed to open MP3 file: " << mpg123_strerror(mh) << std::endl;
@@ -36,6 +43,24 @@ int main() {
     mpg123_getformat(mh, &rate, &channels, &encoding);
     std::cout << "Rate: " << rate << "Hz, Channels: " << channels << ", Encoding: " << encoding << std::endl;
 
+    // Inicializar la salida de audio
+    ao_initialize();
+    int driver = ao_default_driver_id();
+    ao_sample_format format;
+    format.bits = BITS;
+    format.channels = channels;
+    format.rate = rate;
+    format.byte_format = AO_FMT_NATIVE;
+    format.matrix = 0;
+    ao_device *device = ao_open_live(driver, &format, NULL);
+    if (device == NULL) {
+        std::cerr << "Error opening audio device" << std::endl;
+        mpg123_close(mh);
+        mpg123_delete(mh);
+        mpg123_exit();
+        return 1;
+    }
+
     // Reproducir audio
     size_t buffer_size;
     unsigned char* buffer;
@@ -44,14 +69,17 @@ int main() {
     buffer = (unsigned char*)malloc(buffer_size * sizeof(unsigned char));
 
     while (mpg123_read(mh, buffer, buffer_size, &buffer_size) == MPG123_OK) {
-        // Aquí puedes hacer lo que quieras con los datos del audio (por ejemplo, reproducirlo)
+        ao_play(device, (char *)buffer, buffer_size);
     }
 
     // Limpiar
     free(buffer);
+    ao_close(device);
+    ao_shutdown();
     mpg123_close(mh);
     mpg123_delete(mh);
     mpg123_exit();
 
     return 0;
 }
+

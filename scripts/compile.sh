@@ -10,7 +10,8 @@
 #####################################################################
 
 
- #g++ -o app_st7789_drv main.cc st7789.cc -lbcm2835 
+#g++ -o app src/main.cpp  -lmpg123
+# g++ -o app src/main.cpp  -lmpg123 -I/home/pi/src/mp3/include/assets/
 
 ALL=$1
 CC=$2

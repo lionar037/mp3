@@ -21,10 +21,16 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# g++ -o app src/main.cpp  -lmpg123 -I/home/pi/src/mp3/include/assets/
+#g++ -std=c++17 -o mp3_player src/main.cpp -lmpg123 -lao -lpthread -I/home/pi/src/mp3/include/assets/
+
 # Incluir directorios de encabezados
 include_directories(    
     include 
-    include/mp3
+    include/mp3/
+    include/files/
+    include/assets/
+
 )
 
 # Definir las rutas de salida de binarios y archivos objeto
@@ -54,6 +60,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Buscar y vincular la biblioteca mpg123 para reproducir archivos MP3
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(MPG123 REQUIRED IMPORTED_TARGET mpg123)
+
+# Buscar y vincular la biblioteca libao para la salida de audio
+pkg_check_modules(LIBAO REQUIRED IMPORTED_TARGET ao)
 
 # Vincular pthread y mpg123 al ejecutable
 target_link_libraries(${PROJECT_NAME} PkgConfig::MPG123 pthread)
