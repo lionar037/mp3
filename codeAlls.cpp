@@ -6,7 +6,10 @@
 
 #pragma once
 
+namespace MP3{
 
+    
+}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -14,7 +17,7 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#pragma once 
+#pragma once
 #include <vector>
 #include <memory>
 #include <string>
@@ -25,7 +28,7 @@ namespace MP3{
 
     class MP3Player {
     public:
-        MP3Player();
+        explicit MP3Player();
         ~MP3Player();
     
         bool loadFile(const std::string& filename);
@@ -33,16 +36,17 @@ namespace MP3{
         void stop();
     
     private:
-        mpg123_handle* mh;
-        ao_device* device;
-        int channels;
-        long rate;
-        int encoding;
-        size_t buffer_size;
-        unsigned char* buffer;
+        mpg123_handle* mh = nullptr;
+        ao_device* device = nullptr;
+        int channels = 0;
+        long rate = 0;
+        int encoding = 0;
+        size_t buffer_size = 0;
+        unsigned char* buffer = nullptr;
     };
 
-}//END MP3////////////////////////////////////////////////////////////////
+} // END MP3
+////////////////////////////////////////////////////////////////
 //
 //                      assets.hpp
 //
@@ -63,23 +67,9 @@ namespace MP3{
 
 #define MP3_SOUND(x) MP3_00 #x
 
-const char* getMP3Filename(int index) {
-    switch(index) {
-        case 0: return "assets/sounds/Dua Lipa TrainingSeason.mp3";
-        case 1: return "assets/sounds/El pajaro.mp3";
-        case 2: return "assets/sounds/Hasta que me olvides live.mp3";
-        case 3: return "assets/sounds/Let Me Love You.mp3";
-        case 4: return "assets/sounds/Loco tu forma de ser.mp3";
-        case 5: return "assets/sounds/Shh a nadie lo sabra.mp3";
-        case 6: return "assets/sounds/Tengo todo excepto a ti.mp3";
-        case 7: return "assets/sounds/The Weeknd Like A God.mp3";
-        case 8: return "assets/sounds/Lithing.mp3";
-        case 9: return "assets/sounds/dualipa.mp3";
-        default: return nullptr;  // Devuelve nullptr si el índice no es válido
-    }
-}
-
-////////////////////////////////////////////////////////////////
+namespace MP3{
+    const char* getMP3Filename(int index);
+}////////////////////////////////////////////////////////////////
 //
 //                      main.cpp
 //                      dependencies :sudo apt install libmpg123-dev
@@ -93,7 +83,7 @@ const char* getMP3Filename(int index) {
 #include <ao/ao.h>
 //libraries me
 //#include <assets.hpp>
-#include <assets/assets.hpp>
+#include <assets.hpp>
 #include <mp3.hpp>
 
 #define BITS 16
@@ -103,7 +93,7 @@ int main() {
     MP3::MP3Player player;
 
     // Cambia el índice según el archivo que quieras reproducir
-    const char* filename = getMP3Filename(8);
+    const char* filename = MP3::getMP3Filename(8);
     std::cout << "Reproduciendo: " << filename << "\n";
 
     if (!player.loadFile(filename)) {
@@ -124,6 +114,33 @@ int main() {
 
 #include <assets.hpp>
 #include <files.hpp>
+
+namespace MP3{
+
+    
+}#include <assets.hpp>
+
+
+namespace MP3{
+
+    const char* getMP3Filename(int index) {
+        switch(index) {
+            case 0: return "assets/sounds/Dua Lipa TrainingSeason.mp3";
+            case 1: return "assets/sounds/El pajaro.mp3";
+            case 2: return "assets/sounds/Hasta que me olvides live.mp3";
+            case 3: return "assets/sounds/Let Me Love You.mp3";
+            case 4: return "assets/sounds/Loco tu forma de ser.mp3";
+            case 5: return "assets/sounds/Shh a nadie lo sabra.mp3";
+            case 6: return "assets/sounds/Tengo todo excepto a ti.mp3";
+            case 7: return "assets/sounds/The Weeknd Like A God.mp3";
+            case 8: return "assets/sounds/Lithing.mp3";
+            case 9: return "assets/sounds/dualipa.mp3";
+            default: return nullptr;  // Devuelve nullptr si el índice no es válido
+        }
+    }
+
+}
+
 ////////////////////////////////////////////////////////////////
 //
 //                      mp3.cpp
@@ -137,9 +154,12 @@ int main() {
 
 #define BITS 16
 
-namespace MP3{
+namespace MP3
+{
 
-    MP3Player::MP3Player() {
+    MP3Player::MP3Player() 
+    : mh(nullptr), device(nullptr), buffer(nullptr) 
+    {
         mpg123_init();
         int err = 0;
         mh = mpg123_new(NULL, &err);
@@ -212,4 +232,79 @@ namespace MP3{
     }
 
 }
+
+/*
+    MP3Player::MP3Player() {
+        mpg123_init();
+        int err = 0;
+        mh = mpg123_new(NULL, &err);
+        if (mh == NULL) {
+            std::cerr << "Failed to create mpg123 handle: " << mpg123_plain_strerror(err) << std::endl;
+        }
+    }
+
+    MP3Player::~MP3Player() {
+        if (mh) {
+            mpg123_close(mh);
+            mpg123_delete(mh);
+            mpg123_exit();
+        }
+        if (buffer) {
+            free(buffer);
+        }
+        if (device) {
+            ao_close(device);
+            ao_shutdown();
+        }
+    }
+
+    bool MP3Player::loadFile(const std::string& filename) {
+        if (!mh) {
+            return false;
+        }
+
+        int err = mpg123_open(mh, filename.c_str());
+        if (err != MPG123_OK) {
+            std::cerr << "Failed to open MP3 file: " << mpg123_strerror(mh) << std::endl;
+            return false;
+        }
+
+        mpg123_getformat(mh, &rate, &channels, &encoding);
+        std::cout << "Rate: " << rate << "Hz, Channels: " << channels << ", Encoding: " << encoding << std::endl;
+
+        // Inicializar la salida de audio
+        ao_initialize();
+        int driver = ao_default_driver_id();
+        ao_sample_format format;
+        format.bits = BITS;
+        format.channels = channels;
+        format.rate = rate;
+        format.byte_format = AO_FMT_NATIVE;
+        format.matrix = 0;
+        device = ao_open_live(driver, &format, NULL);
+        if (device == NULL) {
+            std::cerr << "Error opening audio device" << std::endl;
+            return false;
+        }
+
+        buffer_size = mpg123_outblock(mh);
+        buffer = (unsigned char*)malloc(buffer_size * sizeof(unsigned char));
+        return true;
+    }
+
+    void MP3Player::play() {
+        if (!mh || !device) {
+            return;
+        }
+
+        while (mpg123_read(mh, buffer, buffer_size, &buffer_size) == MPG123_OK) {
+            ao_play(device, (char *)buffer, buffer_size);
+        }
+    }
+
+    void MP3Player::stop() {
+        // Cleanup will be handled in the destructor
+    }
+*/
+
 

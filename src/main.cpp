@@ -7,26 +7,18 @@
 ////////////////////////////////////////////////////////////////
 
 #include <iostream>
-#include <memory>
-#include <mpg123.h>
-#include <ao/ao.h>
-//libraries me
-//#include <assets.hpp>
+#include <mp3_memory.hpp>
 #include <assets.hpp>
-#include <mp3.hpp>
-
-#define BITS 16
-
 
 int main() {
-    MP3::MP3Player player;
+    MP3::MP3MemoryPlayer player;
 
     // Cambia el índice según el archivo que quieras reproducir
     const char* filename = MP3::getMP3Filename(8);
-    std::cout << "Reproduciendo: " << filename << "\n";
+    std::cout << "Reproduciendo desde memoria: " << filename << "\n";
 
-    if (!player.loadFile(filename)) {
-        std::cerr << "No se pudo cargar el archivo MP3" << std::endl;
+    if (!player.loadFileToMemory(filename)) {
+        std::cerr << "No se pudo cargar el archivo MP3 en memoria" << std::endl;
         return 1;
     }
 
@@ -34,4 +26,3 @@ int main() {
     
     return 0;
 }
-
