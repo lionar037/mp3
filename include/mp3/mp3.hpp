@@ -4,7 +4,7 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#pragma once 
+#pragma once
 #include <vector>
 #include <memory>
 #include <string>
@@ -23,13 +23,13 @@ namespace MP3{
         void stop();
     
     private:
-        mpg123_handle* mh;
-        ao_device* device;
-        int channels;
-        long rate;
-        int encoding;
-        size_t buffer_size;
-        unsigned char* buffer;
+        mpg123_handle* mh = nullptr;
+        ao_device* device = nullptr;
+        int channels = 0;
+        long rate = 0;
+        int encoding = 0;
+        size_t buffer_size = 0;
+        unsigned char* buffer = nullptr;
     };
 
-}//END MP3
+} // END MP3
